@@ -14,7 +14,22 @@ export cuboid_system, getedgei, getedge, find_cells, biotsavart,
 
 
 
-"skipfaces is in the order [x-, x+, y-, y+, z-, z+]"
+
+"""
+To create a cuboid system of edges and vertices
+# Arguments:
+- totalsize::3-element Array{Float64,1}
+    The x,y,z sizes of the cuboid
+- ntiles::3-element Array{Float64,1}
+    The number of tiles
+- skipfaces::6-element Array{Bool,1}
+    skipfaces is in the order [x-, x+, y-, y+, z-, z+]
+# Returns:
+- g::directed simple Int64 graph
+- vertex_positions::element Array{Any,1}
+# Example:
+    g, vertex_positions = cuboid_system([2, 3.4, 2], [3, 5, 3],skipfaces = [false, false, true, true, false, false])
+"""
 function cuboid_system(totalsize, ntiles; skipfaces = falses(6))
     gridplanes = linspace.(-totalsize / 2, totalsize / 2, ntiles + 1)
     vertex_positions = []
@@ -84,8 +99,9 @@ function cuboid_system(totalsize, ntiles; skipfaces = falses(6))
     g, vertex_positions
 end
 
-
-"Identify the edge between vertices a and b (in any direction)."
+"""
+Identify the edge between vertices a and b (in any direction).
+"""
 function getedgei(g, a, b)
     for (i, e) in enumerate(edges(g))
         if (dst(e) == a) & (src(e) == b)
@@ -97,8 +113,9 @@ function getedgei(g, a, b)
     return 0
 end
 
-
-"Identify the edge between vertices a and b (in any direction)."
+"""
+Identify the edge between vertices a and b (in any direction).
+"""
 function getedge(g, a, b)
     for e in edges(g)
         if (dst(e) == a) & (src(e) == b)
@@ -179,7 +196,17 @@ function find_cells(g; maxpathlength = Inf, cells = [])
 end
 
 
-"Sine of the angle between vectors"
+"""
+Sine of the angle between 2 vectors x1 and x2
+# Argments:
+- x1::3-element Array{Float64,1}
+    coordinates of x1
+- x2::3-element Array{Float64,1}
+    coordinates of x2
+# Return
+- sinvector::Float64
+    the sine of the angle between x1 and x2
+"""
 sinvectors(x1, x2) = norm(x1 × x2) / (norm(x1) * norm(x2))
 
 const μ0 = 4π * 1e-7
@@ -219,7 +246,9 @@ function numbiotsavart(x1, x2, p; n = 1000)
 end
 
 
-"Magnetic field in point p produced by ith cell"
+"""
+Magnetic field in point p produced by ith cell
+"""
 function biotsavart_cell(p, vertex_positions, cell)
     vrts = [ vertex_positions[k] for k in cell ]
     sum([ biotsavart(vrts[i], vrts[i + 1], p) for i in 1:length(vrts)-1 ])
@@ -238,7 +267,17 @@ function field_loops(p, loops, currents, vertex_positions)
     field
 end
 
-
+"""
+The matrix M as B(poi)=M * I, with B(poi) the magnetic field computed at the
+points of interest (poi), and I the currents in the tiles.
+# Arguments:
+- poi::Array{Array{Float64,1},1}
+    the array of points of interest
+- vertex_positions::::Array{Array{Float64,1},1}
+    the positions of the vertices
+- cells::Array{5-element Array{Float64,1},1}
+    the vertices of the cells
+"""
 function system_matrix(poi, vertex_positions, cells)
     M = hcat([
         # for the ith cell the proportionality constant for the field it produces

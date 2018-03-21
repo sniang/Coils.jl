@@ -211,6 +211,7 @@ function plot_simpleloop(loop, current, vertex_positions,
              vertices: $loop
              decomposition: $dstr
           """, fontsize = "x-large")
+    tight_layout()
 end
 
 
